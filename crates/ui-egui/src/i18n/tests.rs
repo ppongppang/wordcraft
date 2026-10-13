@@ -1121,7 +1121,7 @@ fn bulgarian_locales_and_saved_preference_work_without_changing_the_document() {
     for tag in ["bg", "bg-BG", "bg_BG.UTF-8", "BG-bg", "bg-Cyrl-BG"] {
         assert_eq!(lang_from_tag(tag), Some(bg), "{tag}");
     }
-    assert_eq!(first_supported(["ko-KR", "bg-BG", "en-US"]), Some(bg));
+    assert_eq!(first_supported([UNSUPPORTED, "bg-BG", "en-US"]), Some(bg));
     let mut app = crate::WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Default::default());
     let before = serde_json::to_value(&app.session.doc).unwrap();
     let result = app.run("ui.language", serde_json::json!({"value": "BG"})).unwrap();
@@ -1190,4 +1190,24 @@ fn bundled_interface_fonts_cover_bulgarian_without_system_fallbacks() {
         }
     }
     assert!(!lang("bg").uses_cjk());
+}
+
+
+#[test]
+fn korean_locale_catalog_and_fallback() {
+    let ko = lang("ko");
+    assert_eq!(ko.name(), "한국어");
+    assert!(ko.uses_cjk());
+    for tag in ["ko", "ko-KR", "ko_KR.UTF-8", "KO_kr.UTF-8"] {
+        assert_eq!(lang_from_tag(tag), Some(ko));
+    }
+    assert_eq!(normalize_pref("KO"), Some("ko"));
+    assert_eq!(first_supported([UNSUPPORTED, "ko-KR", "en-US"]), Some(ko));
+    assert_eq!(tr(ko, "Home"), "홈");
+    assert_eq!(tr(ko, "Review"), "검토");
+    assert_eq!(tr(ko, "Track Changes"), "변경 내용 추적");
+    assert_eq!(tr(ko, "Format Painter"), "서식 복사");
+    assert_eq!(tr(ko, "label added after this catalog"), "label added after this catalog");
+    let (_, errors) = parse_entries(ko.0.source);
+    assert!(errors.is_empty(), "{errors:?}");
 }

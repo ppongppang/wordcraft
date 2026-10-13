@@ -426,7 +426,14 @@ pub fn font_definitions(prefer_hans: bool, system_cjk: bool) -> FontDefinitions 
             }
         }
     };
-    let cjk = wordcraft_fonts::ui_cjk_fonts(prefer_hans);
+    let mut cjk = wordcraft_fonts::ui_cjk_fonts(prefer_hans);
+    let mut korean: Vec<_> = wordcraft_fonts::CRAFT_FONTS.iter().filter(|font| font.scripts.contains(&"Hang") && font.style == "Regular").collect();
+    if crate::i18n::current().code() == "ko" {
+        korean.extend(cjk);
+        cjk = korean;
+    } else {
+        cjk.extend(korean);
+    }
     for f in &cjk {
         // The same static bytes the document fonts use: one copy in the binary.
         add_cjk(&mut fonts, format!("{} {}", f.family, f.style), FontData::from_static(f.bytes));

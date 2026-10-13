@@ -213,7 +213,7 @@ fn highlight_menu(ui: &mut egui::Ui, app: &mut WordApp) {
             }
         }
     });
-    if ui.selectable_label(false, "No Color").clicked() {
+    if ui.selectable_label(false, crate::i18n::t("No Color")).clicked() {
         let _ = app.run("format.highlight", json!({"color": "none"}));
         ui.close();
     }
@@ -222,7 +222,7 @@ fn highlight_menu(ui: &mut egui::Ui, app: &mut WordApp) {
 /// Font colour: Automatic, the colour grid, Recent Colors and More Colors… (#606).
 fn font_color_menu(ui: &mut egui::Ui, app: &mut WordApp) {
     egui::ScrollArea::vertical().max_height(280.0).show(ui, |ui| {
-        if ui.selectable_label(false, "Automatic").clicked() {
+        if ui.selectable_label(false, crate::i18n::t("Automatic")).clicked() {
             let _ = app.run("format.color", json!({"color": "auto"}));
             ui.close();
             return;
