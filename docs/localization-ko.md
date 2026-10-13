@@ -12,7 +12,15 @@ because its language name contains Hangul; the Windows build also adds an unchan
 This adds interface translation, not Korean spelling or grammar checking. English fallback
 remains for strings outside the catalog and UI strings that upstream has not localized yet.
 
-Catalog keys, placeholders, escapes and trailing ellipses were validated locally. Rust tests
-are included but could not be executed in the authoring environment: it has no Rust compiler
-and cannot download dependencies. Compilation, visual layout, Windows IME and DOCX/PDF
-round trips require the provided Windows CI workflow and a desktop smoke check.
+Validation on 2026-10-13: Windows x64 release build and all six project quality gates passed
+(fmt, clippy, tests, assets, layering and wasm). Korean locale, full catalog coverage, placeholders,
+font glyphs and saved language preference tests passed. The offscreen 1440 x 900 interface snapshot
+was inspected: Korean ribbon captions and document text render correctly.
+
+Validated source: `6dc0ace6ba0816cf7a5c3f7bce4910175c374c25`.
+Build: https://github.com/ppongppang/wordcraft/actions/runs/38351751735
+The portable artifact contains `wordcraft.exe`, licences, its SHA256 and any CI formatting/lockfile
+patch. GitHub keeps these artifacts for 30 days.
+
+Actual Windows keyboard composition and compatibility of existing complex DOCX/PDF files still
+require a desktop smoke check; the offscreen screenshot is a rendering check.
