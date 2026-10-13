@@ -463,7 +463,8 @@ fn system_cjk_font(hans: bool) -> Option<&'static wordcraft_fonts::SystemUiFont>
     static OTHER: std::sync::OnceLock<Option<wordcraft_fonts::SystemUiFont>> = std::sync::OnceLock::new();
     (if hans { &ZH } else { &OTHER })
         .get_or_init(|| {
-            let embedded = wordcraft_fonts::ui_cjk_fonts(hans);
+            let mut embedded = wordcraft_fonts::ui_cjk_fonts(hans);
+            embedded.extend(wordcraft_fonts::CRAFT_FONTS.iter().filter(|font| font.scripts.contains(&"Hang") && font.style == "Regular"));
             let (catalogs, names) = crate::i18n::Lang::cjk_font_text(hans);
             let mut needed = wordcraft_fonts::ui_uncovered_cjk(&catalogs, &embedded);
             if needed.is_empty() {

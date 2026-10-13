@@ -440,7 +440,7 @@ fn cjk_catalogs_are_covered_by_the_embedded_interface_faces() {
         return;
     }
     let names: String = Lang::all().map(Lang::name).collect();
-    for code in ["zh-hans", "zh-hant", "ja"] {
+    for code in ["ko", "zh-hans", "zh-hant", "ja"] {
         let l = lang(code);
         let ctx = egui::Context::default();
         ctx.set_fonts(crate::theme::font_definitions(l.prefers_hans(), false));
@@ -455,7 +455,9 @@ fn cjk_catalogs_are_covered_by_the_embedded_interface_faces() {
             assert!(missing.is_empty(), "{code}: no glyph in {font:?} for {missing}");
         }
         // So the interface reads no installed CJK font for these languages.
-        assert_eq!(wordcraft_fonts::ui_uncovered_cjk(&[l.0.source, &names], &wordcraft_fonts::ui_cjk_fonts(l.prefers_hans())), Vec::<char>::new());
+        let mut embedded = wordcraft_fonts::ui_cjk_fonts(l.prefers_hans());
+        embedded.extend(wordcraft_fonts::CRAFT_FONTS.iter().filter(|font| font.scripts.contains(&"Hang") && font.style == "Regular"));
+        assert_eq!(wordcraft_fonts::ui_uncovered_cjk(&[l.0.source, &names], &embedded), Vec::<char>::new());
     }
 }
 
@@ -463,7 +465,7 @@ fn cjk_catalogs_are_covered_by_the_embedded_interface_faces() {
 fn only_cjk_languages_ask_for_an_installed_cjk_font() {
     // #241 follow-up: an English interface must not read a large system CJK font on startup.
     let cjk: Vec<&str> = Lang::all().filter(|l| l.uses_cjk()).map(Lang::code).collect();
-    assert_eq!(cjk, ["zh-hans", "zh-hant", "ja"]);
+    assert_eq!(cjk, ["ko", "zh-hans", "zh-hant", "ja"]);
 }
 
 #[test]
@@ -926,7 +928,9 @@ fn polish_covers_every_key_of_every_other_catalog() {
     // Hungarian and Bulgarian also name the citation styles, and Bulgarian has a few one-line
     // pieces of gallery labels. Polish matches every other catalog, including the style names and
     // equation gallery Russian translates.
-    for other in Lang::all().filter(|l| *l != Lang::EN && !matches!(l.code(), "pl" | "it" | "hu" | "bg")) {
+    // Korean also carries Bulgarian's citation names and one-line gallery pieces; its
+    // coverage of that larger reference catalog is checked separately below.
+    for other in Lang::all().filter(|l| *l != Lang::EN && !matches!(l.code(), "pl" | "it" | "hu" | "bg" | "ko")) {
         let mut missing: Vec<String> = keys(other.0.source).difference(&polish).cloned().collect();
         missing.sort();
         assert!(missing.is_empty(), "pl lacks {}'s {missing:?}", other.code());
@@ -1210,4 +1214,11 @@ fn korean_locale_catalog_and_fallback() {
     assert_eq!(tr(ko, "label added after this catalog"), "label added after this catalog");
     let (_, errors) = parse_entries(ko.0.source);
     assert!(errors.is_empty(), "{errors:?}");
+}
+
+#[test]
+fn korean_covers_the_full_bulgarian_reference_catalog() {
+    use std::collections::HashSet;
+    let keys = |source| parse_entries(source).0.into_iter().map(|entry| entry.source).collect::<HashSet<_>>();
+    assert!(keys(lang("ko").0.source).is_superset(&keys(lang("bg").0.source)));
 }
